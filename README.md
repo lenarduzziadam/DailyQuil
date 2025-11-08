@@ -21,3 +21,52 @@ Writers can log in, craft a short story, save it, and track their writing streak
 - **Responsive UI** – Clean, minimalist writing space for distraction-free journaling
 
 ## 🗂 Project Structure
+
+- /docs/
+-   index.html → landing/login
+-   today.html → write today's story
+-   history.html → view streak & past entries
+
+-   js/
+-       story.js → JS logic (fetch prompt, save story)
+-   css/
+-       style.css → basic layout + dark mode
+
+
+## 🧩 Database Schema
+| Table | Purpose |
+| ------- | --------- |
+| `profiles` | User profiles (auth ID, display name) |
+| `prompts` | List of genres + elements for daily rotation |
+| `stories` | User submissions (one per day per user) |
+
+Row-Level Security policies ensure users can **read and write only their own records.**
+
+## 🚀 Getting Started
+**Clone**
+```bash
+git clone https://github.com/yourusername/daily-quill.git
+cd daily-quill
+```
+**Install dependencies**
+```npm install```
+
+***Set environment variables in .env***
+```SUPABASE_URL=```
+```SUPABASE_ANON_KEY=```
+
+***Run dev server***
+```npm run dev```
+```Visit http://localhost:3000```
+
+***🧠 Future Plans***
+- 🖋 Markdown editor with rich text preview
+- 🎯 User preferences (genre bias, word-count goals)
+- 🔔 Email reminders for daily prompts via Supabase cron
+- 🗣 Public prompt submissions and community leaderboard
+- 📊 Data visualization of streak history
+
+__***👤 Author***__
+***Adam Lenarduzzi***
+CS Student | Software Developer | Creator of Jarlang & Airport Escape
+LinkedIn | GitHub
