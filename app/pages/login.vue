@@ -1,11 +1,11 @@
 <template>
-  <div class="min-h-screen flex items-center justify-center bg-gradient-to-br from-purple-50 to-blue-50 py-12 px-4 sm:px-6 lg:px-8">
+  <div class="min-h-screen gradient-bg flex items-center justify-center py-12 px-4 sm:px-6 lg:px-8">
     <div class="max-w-md w-full space-y-8">
       <div>
         <NuxtLink to="/" class="flex justify-center">
-          <h1 class="text-4xl font-bold text-purple-600">DailyQuil</h1>
+          <h1 class="text-4xl font-bold text-gradient">DailyQuil</h1>
         </NuxtLink>
-        <h2 class="mt-6 text-center text-3xl font-extrabold text-gray-900">
+        <h2 class="heading-lg mt-6 text-center">
           {{ isSignUp ? 'Create your account' : 'Sign in to your account' }}
         </h2>
         <p class="mt-2 text-center text-sm text-gray-600">
@@ -29,7 +29,7 @@
               name="username"
               type="text"
               :required="isSignUp"
-              class="appearance-none relative block w-full px-3 py-2 border border-gray-300 placeholder-gray-500 text-gray-900 rounded-md focus:outline-none focus:ring-purple-500 focus:border-purple-500 focus:z-10 sm:text-sm"
+              class="input"
               placeholder="Username"
             />
           </div>
@@ -41,7 +41,7 @@
               v-model="displayName"
               name="display-name"
               type="text"
-              class="appearance-none relative block w-full px-3 py-2 border border-gray-300 placeholder-gray-500 text-gray-900 rounded-md focus:outline-none focus:ring-purple-500 focus:border-purple-500 focus:z-10 sm:text-sm"
+              class="input"
               placeholder="Display Name (optional)"
             />
           </div>
@@ -55,7 +55,7 @@
               type="email"
               autocomplete="email"
               required
-              class="appearance-none relative block w-full px-3 py-2 border border-gray-300 placeholder-gray-500 text-gray-900 rounded-md focus:outline-none focus:ring-purple-500 focus:border-purple-500 focus:z-10 sm:text-sm"
+              class="input"
               placeholder="Email address"
             />
           </div>
@@ -69,7 +69,7 @@
               type="password"
               autocomplete="current-password"
               required
-              class="appearance-none relative block w-full px-3 py-2 border border-gray-300 placeholder-gray-500 text-gray-900 rounded-md focus:outline-none focus:ring-purple-500 focus:border-purple-500 focus:z-10 sm:text-sm"
+              class="input"
               :placeholder="isSignUp ? 'Password (min 6 characters)' : 'Password'"
               :minlength="isSignUp ? 6 : undefined"
             />
@@ -88,7 +88,7 @@
           <button
             type="submit"
             :disabled="loading"
-            class="group relative w-full flex justify-center py-2 px-4 border border-transparent text-sm font-medium rounded-md text-white bg-gradient-to-r from-purple-600 to-pink-600 hover:shadow-lg focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-purple-500 disabled:opacity-50 disabled:cursor-not-allowed transition-all"
+            class="btn-primary w-full"
           >
             {{ loading ? 'Loading...' : (isSignUp ? 'Sign up' : 'Sign in') }}
           </button>

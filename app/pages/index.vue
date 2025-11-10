@@ -1,7 +1,7 @@
 <template>
-  <div class="min-h-screen bg-gradient-to-br from-purple-50 to-blue-50">
+  <div class="min-h-screen gradient-bg">
     <!-- Navigation -->
-    <nav class="bg-white shadow-sm border-b">
+    <nav class="nav">
       <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div class="flex justify-between items-center h-16">
           <div class="flex items-center">
@@ -11,7 +11,7 @@
             <NuxtLink
               v-if="user"
               to="/write"
-              class="bg-gradient-to-r from-purple-600 to-pink-600 text-white px-4 py-2 rounded-lg hover:shadow-lg transition-all font-semibold"
+              class="btn-primary"
             >
               ✍️ Write
             </NuxtLink>
@@ -44,10 +44,10 @@
     <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
       <!-- Daily Prompt Section -->
       <div class="mb-8">
-        <div class="bg-white rounded-2xl shadow-lg p-8 border-2 border-purple-200">
+        <div class="prompt-card">
           <div class="flex items-center justify-between mb-4">
-            <h2 class="text-3xl font-bold text-gray-900">Today's Prompt</h2>
-            <span class="bg-purple-100 text-purple-800 px-4 py-2 rounded-full text-sm font-semibold">
+            <h2 class="heading-lg">Today's Prompt</h2>
+            <span class="badge bg-purple-100 text-purple-800 px-4 py-2">
               {{ new Date().toLocaleDateString('en-US', { weekday: 'long', month: 'long', day: 'numeric' }) }}
             </span>
           </div>
@@ -58,7 +58,7 @@
           
           <div v-else-if="todayPrompt" class="space-y-4">
             <div class="flex items-center space-x-2">
-              <span class="bg-gradient-to-r from-purple-500 to-pink-500 text-white px-3 py-1 rounded-full text-sm font-semibold">
+              <span class="badge-primary">
                 {{ todayPrompt.genre }}
               </span>
             </div>
@@ -69,7 +69,7 @@
                 <span
                   v-for="(element, index) in todayPrompt.elements"
                   :key="index"
-                  class="bg-blue-100 text-blue-800 px-4 py-2 rounded-lg text-sm font-medium"
+                  class="badge-element"
                 >
                   {{ element }}
                 </span>
@@ -79,7 +79,7 @@
             <NuxtLink
               v-if="user"
               :to="`/write?prompt=${todayPrompt.id}`"
-              class="inline-block bg-gradient-to-r from-purple-600 to-pink-600 text-white px-8 py-3 rounded-xl font-semibold hover:shadow-lg transform hover:-translate-y-0.5 transition-all"
+              class="btn-primary inline-block"
             >
               Start Writing
             </NuxtLink>
@@ -101,7 +101,7 @@
       <!-- Recent Stories Feed -->
       <div class="mb-8">
         <div class="flex justify-between items-center mb-6">
-          <h2 class="text-2xl font-bold text-gray-900">Recent Stories</h2>
+          <h2 class="heading-md">Recent Stories</h2>
           <button
             @click="loadStories"
             class="text-purple-600 hover:text-purple-700 font-medium"
@@ -123,7 +123,7 @@
           <div
             v-for="story in stories"
             :key="story.id"
-            class="bg-white rounded-xl shadow hover:shadow-lg transition-shadow p-6 cursor-pointer"
+            class="story-card"
             @click="navigateTo(`/story/${story.id}`)"
           >
             <div class="flex items-start justify-between mb-3">
@@ -137,7 +137,7 @@
               </div>
               <span
                 v-if="story.prompt"
-                class="bg-purple-100 text-purple-700 px-2 py-1 rounded text-xs font-medium whitespace-nowrap"
+                class="badge-genre whitespace-nowrap"
               >
                 {{ story.prompt.genre }}
               </span>
@@ -158,7 +158,7 @@
       <!-- User's Recent Stories (if logged in) -->
       <div v-if="user && userStories.length > 0" class="mb-8">
         <div class="flex justify-between items-center mb-6">
-          <h2 class="text-2xl font-bold text-gray-900">Your Recent Stories</h2>
+          <h2 class="heading-md">Your Recent Stories</h2>
           <NuxtLink
             to="/profile"
             class="text-purple-600 hover:text-purple-700 font-medium"
@@ -177,8 +177,8 @@
             <div class="flex justify-between items-start mb-2">
               <h3 class="font-semibold text-gray-900">{{ story.title }}</h3>
               <span
-                :class="story.is_public ? 'bg-green-100 text-green-700' : 'bg-gray-100 text-gray-700'"
-                class="px-2 py-1 rounded text-xs"
+                :class="story.is_public ? 'badge-status' : 'bg-gray-100 text-gray-700'"
+                class="badge"
               >
                 {{ story.is_public ? 'Public' : 'Private' }}
               </span>
