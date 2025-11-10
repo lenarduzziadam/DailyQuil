@@ -1,18 +1,25 @@
 export const useStories = () => {
   const supabase = useSupabaseClient()
-  const user = useSupabaseUser()
 
   // Create a new story
   const createStory = async (story) => {
-    if (!user.value) throw new Error('User not authenticated')
+    // Get the current session directly from supabase
+    const { data: { session } } = await supabase.auth.getSession()
+    
+    if (!session?.user) {
+      console.error('No session found')
+      throw new Error('User not authenticated')
+    }
 
+    console.log('Creating story with user_id:', session.user.id)
+    
     const wordCount = story.content.trim().split(/\s+/).length
 
     const { data, error } = await supabase
       .from('stories')
       .insert([
         {
-          user_id: user.value.id,
+          user_id: session.user.id,
           title: story.title,
           content: story.content,
           prompt_id: story.prompt_id || null,
@@ -23,7 +30,10 @@ export const useStories = () => {
       .select()
       .single()
 
-    if (error) throw error
+    if (error) {
+      console.error('Error creating story:', error)
+      throw error
+    }
     return data
   }
 
@@ -74,7 +84,14 @@ export const useStories = () => {
 
   // Get user's stories
   const getUserStories = async (userId) => {
-    const targetUserId = userId || user.value?.id
+    let targetUserId = userId
+    
+    // If no userId provided, get it from the session
+    if (!targetUserId) {
+      const { data: { session } } = await supabase.auth.getSession()
+      targetUserId = session?.user?.id
+    }
+    
     if (!targetUserId) throw new Error('No user ID provided')
 
     const { data, error } = await supabase

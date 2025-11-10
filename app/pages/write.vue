@@ -120,14 +120,10 @@
 <script setup>
 const route = useRoute()
 const router = useRouter()
+const supabase = useSupabaseClient()
 const user = useSupabaseUser()
 const { getPromptById } = usePrompts()
 const { createStory, updateStory, deleteStory, getStoryById } = useStories()
-
-// Redirect if not logged in
-if (!user.value) {
-  navigateTo('/login')
-}
 
 const prompt = ref(null)
 const isEditing = ref(false)
@@ -135,6 +131,7 @@ const storyId = ref(null)
 const saving = ref(false)
 const message = ref('')
 const messageType = ref('success')
+const loading = ref(true)
 
 const formData = ref({
   title: '',
@@ -247,7 +244,26 @@ const handleDelete = async () => {
 
 // Load data on mount
 onMounted(async () => {
+  // Check if user is logged in
+  loading.value = true
+  
+  // Wait a moment for user to load
+  await new Promise(resolve => setTimeout(resolve, 100))
+  
+  if (!user.value) {
+    navigateTo('/login')
+    return
+  }
+  
   await loadPrompt()
   await loadStory()
+  loading.value = false
+})
+
+// Watch for user changes
+watch(user, (newUser) => {
+  if (!newUser && !loading.value) {
+    navigateTo('/login')
+  }
 })
 </script>

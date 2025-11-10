@@ -10,6 +10,13 @@
           <div class="flex items-center space-x-4">
             <NuxtLink
               v-if="user"
+              to="/write"
+              class="bg-gradient-to-r from-purple-600 to-pink-600 text-white px-4 py-2 rounded-lg hover:shadow-lg transition-all font-semibold"
+            >
+              ✍️ Write
+            </NuxtLink>
+            <NuxtLink
+              v-if="user"
               to="/profile"
               class="text-gray-700 hover:text-purple-600"
             >

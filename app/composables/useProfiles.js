@@ -1,15 +1,15 @@
 export const useProfiles = () => {
   const supabase = useSupabaseClient()
-  const user = useSupabaseUser()
 
   // Get current user's profile
   const getCurrentProfile = async () => {
-    if (!user.value) return null
+    const { data: { session } } = await supabase.auth.getSession()
+    if (!session?.user) return null
 
     const { data, error } = await supabase
       .from('profiles')
       .select('*')
-      .eq('id', user.value.id)
+      .eq('id', session.user.id)
       .single()
 
     if (error) throw error
@@ -42,12 +42,13 @@ export const useProfiles = () => {
 
   // Update current user's profile
   const updateProfile = async (updates) => {
-    if (!user.value) throw new Error('User not authenticated')
+    const { data: { session } } = await supabase.auth.getSession()
+    if (!session?.user) throw new Error('User not authenticated')
 
     const { data, error } = await supabase
       .from('profiles')
       .update(updates)
-      .eq('id', user.value.id)
+      .eq('id', session.user.id)
       .select()
       .single()
 
