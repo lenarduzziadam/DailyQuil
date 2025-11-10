@@ -1,7 +1,7 @@
 -- DailyQuil Database Schema
 -- Run this in your Supabase SQL Editor
 
--- ⚠️ WARNING: This will delete existing tables and all their data!
+-- WARNING: This will delete existing tables and all their data!
 -- Drop existing triggers first (if they exist on existing tables)
 DROP TRIGGER IF EXISTS on_auth_user_created ON auth.users;
 DROP TRIGGER IF EXISTS update_profile_stats_on_story_insert ON stories;

@@ -1,75 +1,72 @@
-# Nuxt Minimal Starter
+# 🪶 Daily Quill
+**A daily creative-writing web app built with Nuxt 3 + Supabase**  
+Write short stories, keep your streak alive, and sharpen your imagination—one prompt at a time.
 
-Look at the [Nuxt documentation](https://nuxt.com/docs/getting-started/introduction) to learn more.
+## ✨ Overview
+Daily Quill is a lightweight writing platform designed for authors and hobbyists who want to practice creative writing every day.  
+Each day, the app serves a randomized story prompt drawn from a curated library of genres and themes.  
+Writers can log in, craft a short story, save it, and track their writing streak—similar to GitHub’s contribution chart, but for words instead of commits.
 
-## Setup
+## 🧱 Tech Stack
+- **Nuxt 3** – Front-end framework for fast, reactive pages  
+- **Supabase** – Authentication + Postgres backend (user profiles, stories, prompts)  
+- **PostgreSQL RLS (Row-Level Security)** – Ensures users only access their own stories  
+- **HTML / CSS / JS** – Clean UI; script logic separated in `/public/js/story.js`
 
-Make sure to install dependencies:
+## 📁 Core Features
+- **Daily Prompt Generator** – Randomly selects a genre and 2–3 elements (e.g. “Fantasy • princess • AI • ancient library”)  
+- **User Authentication** – Sign up / login via Supabase Auth  
+- **Story Storage** – Saves each day’s writing to the `stories` table (one per day per user)  
+- **Writing Streak Tracker** – Calculates consecutive-day submissions  
+- **Responsive UI** – Clean, minimalist writing space for distraction-free journaling
 
+## 🗂 Project Structure
+
+- /docs/
+-   index.html → landing/login
+-   today.html → write today's story
+-   history.html → view streak & past entries
+
+-   js/
+-       story.js → JS logic (fetch prompt, save story)
+-   css/
+-       style.css → basic layout + dark mode
+
+
+## 🧩 Database Schema
+| Table | Purpose |
+| ------- | --------- |
+| `profiles` | User profiles (auth ID, display name) |
+| `prompts` | List of genres + elements for daily rotation |
+| `stories` | User submissions (one per day per user) |
+
+Row-Level Security policies ensure users can **read and write only their own records.**
+
+## 🚀 Getting Started
+**Clone**
 ```bash
-# npm
-npm install
-
-# pnpm
-pnpm install
-
-# yarn
-yarn install
-
-# bun
-bun install
+git clone https://github.com/yourusername/daily-quill.git
+cd daily-quill
 ```
+**Install dependencies**
+```npm install```
 
-## Development Server
+***Set environment variables in .env***
+```SUPABASE_URL=```
+```SUPABASE_ANON_KEY=```
 
-Start the development server on `http://localhost:3000`:
+***Run dev server***
+```npm run dev```
+```Visit http://localhost:3000```
 
-```bash
-# npm
-npm run dev
+***🧠 Future Plans***
+- 🖋 Markdown editor with rich text preview
+- 🎯 User preferences (genre bias, word-count goals)
+- 🔔 Email reminders for daily prompts via Supabase cron
+- 🗣 Public prompt submissions and community leaderboard
+- 📊 Data visualization of streak history
 
-# pnpm
-pnpm dev
-
-# yarn
-yarn dev
-
-# bun
-bun run dev
-```
-
-## Production
-
-Build the application for production:
-
-```bash
-# npm
-npm run build
-
-# pnpm
-pnpm build
-
-# yarn
-yarn build
-
-# bun
-bun run build
-```
-
-Locally preview production build:
-
-```bash
-# npm
-npm run preview
-
-# pnpm
-pnpm preview
-
-# yarn
-yarn preview
-
-# bun
-bun run preview
-```
-
-Check out the [deployment documentation](https://nuxt.com/docs/getting-started/deployment) for more information.
+__***👤 Author***__
+***Adam Lenarduzzi***
+CS Student | Software Developer | Creator of Jarlang & Airport Escape
+LinkedIn | GitHub
