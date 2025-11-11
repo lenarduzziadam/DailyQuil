@@ -32,8 +32,30 @@
           <div class="flex items-start justify-between">
             <div class="flex items-center space-x-6">
               <!-- Avatar -->
-              <div class="w-24 h-24 bg-gradient-to-br from-purple-400 to-pink-400 rounded-full flex items-center justify-center text-white font-bold text-4xl">
-                {{ (profile?.display_name || profile?.username || 'U')[0].toUpperCase() }}
+              <div class="relative group">
+                <div 
+                  v-if="profile?.avatar_url" 
+                  class="w-24 h-24 rounded-full overflow-hidden border-4 border-purple-200"
+                >
+                  <img 
+                    :src="profile.avatar_url" 
+                    :alt="profile.display_name || profile.username"
+                    class="w-full h-full object-cover"
+                  />
+                </div>
+                <div 
+                  v-else
+                  class="w-24 h-24 bg-gradient-to-br from-purple-400 to-pink-400 rounded-full flex items-center justify-center text-white font-bold text-4xl"
+                >
+                  {{ (profile?.display_name || profile?.username || 'U')[0].toUpperCase() }}
+                </div>
+                <!-- Edit overlay -->
+                <button
+                  @click="showEditModal = true"
+                  class="absolute inset-0 bg-black bg-opacity-50 rounded-full flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity text-white text-sm font-medium"
+                >
+                  Change
+                </button>
               </div>
               
               <!-- Profile Info -->
@@ -150,6 +172,55 @@
         <h2 class="heading-md mb-6">Edit Profile</h2>
         
         <form @submit.prevent="handleUpdateProfile" class="space-y-4">
+          <!-- Avatar Upload -->
+          <div>
+            <label class="block text-sm font-medium text-gray-700 mb-2">
+              Profile Photo
+            </label>
+            <div class="flex items-center space-x-4">
+              <!-- Current/Preview Avatar -->
+              <div class="relative">
+                <div 
+                  v-if="avatarPreview || profile?.avatar_url" 
+                  class="w-20 h-20 rounded-full overflow-hidden border-2 border-purple-200"
+                >
+                  <img 
+                    :src="avatarPreview || profile.avatar_url" 
+                    alt="Avatar preview"
+                    class="w-full h-full object-cover"
+                  />
+                </div>
+                <div 
+                  v-else
+                  class="w-20 h-20 bg-gradient-to-br from-purple-400 to-pink-400 rounded-full flex items-center justify-center text-white font-bold text-2xl"
+                >
+                  {{ (profile?.display_name || profile?.username || 'U')[0].toUpperCase() }}
+                </div>
+              </div>
+              
+              <!-- Upload Button -->
+              <div class="flex-1">
+                <input
+                  ref="fileInput"
+                  type="file"
+                  accept="image/*"
+                  @change="handleFileSelect"
+                  class="hidden"
+                />
+                <button
+                  type="button"
+                  @click="$refs.fileInput.click()"
+                  class="btn-outline w-full"
+                >
+                  {{ avatarFile ? 'Change Photo' : 'Upload Photo' }}
+                </button>
+                <p v-if="avatarFile" class="text-xs text-gray-500 mt-1">
+                  {{ avatarFile.name }}
+                </p>
+              </div>
+            </div>
+          </div>
+
           <div>
             <label class="block text-sm font-medium text-gray-700 mb-1">
               Username
@@ -214,7 +285,7 @@
 
 <script setup>
 const user = useSupabaseUser()
-const { getCurrentProfile, updateProfile: updateProfileData } = useProfiles()
+const { getCurrentProfile, updateProfile: updateProfileData, updateAvatar } = useProfiles()
 const { getUserStories } = useStories()
 
 const profile = ref(null)
@@ -225,6 +296,9 @@ const showEditModal = ref(false)
 const updating = ref(false)
 const updateMessage = ref('')
 const updateMessageType = ref('success')
+const avatarFile = ref(null)
+const avatarPreview = ref(null)
+const fileInput = ref(null)
 
 const editForm = ref({
   username: '',
@@ -273,16 +347,56 @@ const loadStories = async () => {
   }
 }
 
+// Handle file selection
+const handleFileSelect = (event) => {
+  const file = event.target.files[0]
+  if (!file) return
+  
+  // Validate file type
+  if (!file.type.startsWith('image/')) {
+    updateMessage.value = 'Please select an image file'
+    updateMessageType.value = 'error'
+    return
+  }
+  
+  // Validate file size (max 5MB)
+  if (file.size > 5 * 1024 * 1024) {
+    updateMessage.value = 'Image must be less than 5MB'
+    updateMessageType.value = 'error'
+    return
+  }
+  
+  avatarFile.value = file
+  
+  // Create preview
+  const reader = new FileReader()
+  reader.onload = (e) => {
+    avatarPreview.value = e.target.result
+  }
+  reader.readAsDataURL(file)
+}
+
 // Update profile
 const handleUpdateProfile = async () => {
   try {
     updating.value = true
     updateMessage.value = ''
     
+    // Upload avatar if a new one was selected
+    if (avatarFile.value) {
+      updateMessage.value = 'Uploading photo...'
+      await updateAvatar(avatarFile.value, profile.value?.avatar_url)
+    }
+    
+    // Update other profile fields
     await updateProfileData(editForm.value)
     
     updateMessage.value = 'Profile updated successfully!'
     updateMessageType.value = 'success'
+    
+    // Reset avatar state
+    avatarFile.value = null
+    avatarPreview.value = null
     
     // Reload profile
     await loadProfile()

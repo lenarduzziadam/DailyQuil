@@ -68,11 +68,70 @@ export const useProfiles = () => {
     return data
   }
 
+  // Upload avatar image
+  const uploadAvatar = async (file) => {
+    const { data: { session } } = await supabase.auth.getSession()
+    if (!session?.user) throw new Error('User not authenticated')
+
+    // Create a unique file name
+    const fileExt = file.name.split('.').pop()
+    const fileName = `${session.user.id}/${Date.now()}.${fileExt}`
+
+    // Upload to Supabase Storage
+    const { data, error } = await supabase.storage
+      .from('avatars')
+      .upload(fileName, file, {
+        cacheControl: '3600',
+        upsert: false
+      })
+
+    if (error) {
+      console.error('Storage error:', error)
+      if (error.message.includes('not found')) {
+        throw new Error('Storage bucket "avatars" not found. Please create it in Supabase Dashboard: Storage > New Bucket > Name: "avatars" (Public)')
+      }
+      throw error
+    }
+
+    // Get public URL
+    const { data: { publicUrl } } = supabase.storage
+      .from('avatars')
+      .getPublicUrl(fileName)
+
+    // Update profile with new avatar URL
+    await updateProfile({ avatar_url: publicUrl })
+
+    return publicUrl
+  }
+
+  // Delete old avatar and upload new one
+  const updateAvatar = async (file, oldAvatarUrl) => {
+    const { data: { session } } = await supabase.auth.getSession()
+    if (!session?.user) throw new Error('User not authenticated')
+
+    // Delete old avatar if exists
+    if (oldAvatarUrl) {
+      try {
+        const oldPath = oldAvatarUrl.split('/avatars/')[1]
+        if (oldPath) {
+          await supabase.storage.from('avatars').remove([oldPath])
+        }
+      } catch (error) {
+        console.warn('Error deleting old avatar:', error)
+      }
+    }
+
+    // Upload new avatar
+    return await uploadAvatar(file)
+  }
+
   return {
     getCurrentProfile,
     getProfileById,
     getProfileByUsername,
     updateProfile,
-    createProfile
+    createProfile,
+    uploadAvatar,
+    updateAvatar
   }
 }
