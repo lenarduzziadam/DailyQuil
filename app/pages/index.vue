@@ -127,17 +127,38 @@
             @click="navigateTo(`/story/${story.id}`)"
           >
             <div class="flex items-start justify-between mb-3">
-              <div>
-                <h3 class="font-bold text-lg text-gray-900 line-clamp-2">
-                  {{ story.title }}
-                </h3>
-                <p class="text-sm text-gray-500 mt-1">
-                  by {{ story.profile?.display_name || story.profile?.username || 'Anonymous' }}
-                </p>
+              <div class="flex-1">
+                <div class="flex items-center gap-2 mb-2">
+                  <!-- Author Avatar -->
+                  <div 
+                    v-if="story.profile?.avatar_url" 
+                    class="w-8 h-8 rounded-full overflow-hidden flex-shrink-0"
+                  >
+                    <img 
+                      :src="story.profile.avatar_url" 
+                      :alt="story.profile.display_name || story.profile.username"
+                      class="w-full h-full object-cover"
+                    />
+                  </div>
+                  <div 
+                    v-else
+                    class="w-8 h-8 bg-gradient-to-br from-purple-400 to-pink-400 rounded-full flex items-center justify-center text-white font-bold text-xs flex-shrink-0"
+                  >
+                    {{ (story.profile?.display_name || story.profile?.username || 'A')[0].toUpperCase() }}
+                  </div>
+                  <div class="flex-1 min-w-0">
+                    <h3 class="font-bold text-lg text-gray-900 line-clamp-1">
+                      {{ story.title }}
+                    </h3>
+                    <p class="text-xs text-gray-500">
+                      by {{ story.profile?.display_name || story.profile?.username || 'Anonymous' }}
+                    </p>
+                  </div>
+                </div>
               </div>
               <span
                 v-if="story.prompt"
-                class="badge-genre whitespace-nowrap"
+                class="badge-genre whitespace-nowrap ml-2"
               >
                 {{ story.prompt.genre }}
               </span>
