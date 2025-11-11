@@ -30,18 +30,38 @@
         <!-- Story Header -->
         <div class="bg-white rounded-xl shadow-lg p-8">
           <div class="flex justify-between items-start mb-4">
-            <div>
+            <div class="flex-1">
               <h1 class="text-4xl font-bold text-gray-900 mb-4">
                 {{ story.title }}
               </h1>
-              <div class="flex items-center space-x-4 text-sm text-gray-500">
-                <span>
-                  by <span class="font-medium text-gray-700">{{ story.profile?.display_name || story.profile?.username || 'Anonymous' }}</span>
-                </span>
-                <span>•</span>
-                <span>{{ story.word_count }} words</span>
-                <span>•</span>
-                <span>{{ formatDate(story.created_at) }}</span>
+              <div class="flex items-center space-x-3 text-sm text-gray-500">
+                <!-- Author Avatar -->
+                <div 
+                  v-if="story.profile?.avatar_url" 
+                  class="w-10 h-10 rounded-full overflow-hidden flex-shrink-0"
+                >
+                  <img 
+                    :src="story.profile.avatar_url" 
+                    :alt="story.profile.display_name || story.profile.username"
+                    class="w-full h-full object-cover"
+                  />
+                </div>
+                <div 
+                  v-else
+                  class="w-10 h-10 bg-gradient-to-br from-purple-400 to-pink-400 rounded-full flex items-center justify-center text-white font-bold text-sm flex-shrink-0"
+                >
+                  {{ (story.profile?.display_name || story.profile?.username || 'A')[0].toUpperCase() }}
+                </div>
+                <div>
+                  <div class="font-medium text-gray-700">
+                    {{ story.profile?.display_name || story.profile?.username || 'Anonymous' }}
+                  </div>
+                  <div class="flex items-center space-x-2 text-xs">
+                    <span>{{ story.word_count }} words</span>
+                    <span>•</span>
+                    <span>{{ formatDate(story.created_at) }}</span>
+                  </div>
+                </div>
               </div>
             </div>
             
