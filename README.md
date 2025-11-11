@@ -22,15 +22,19 @@ Writers can log in, craft a short story, save it, and track their writing streak
 
 ## 🗂 Project Structure
 
-- /docs/
--   index.html → landing/login
--   today.html → write today's story
--   history.html → view streak & past entries
+- /app/
+-   app.vue -> stores main app that runs contains css style sheet as well. 
 
--   js/
--       story.js → JS logic (fetch prompt, save story)
--   css/
--       style.css → basic layout + dark mode
+-   pages/
+-       index.vue -> landing page that shows streak and current prompt
+-       login.vue -> login and signup page
+-       profile.vue -> view/edit profile contents (bio, pic) (stored via supabase)
+-       write.html → write story and otpionally view current prompt
+
+-   composables/
+-       useProfiles.js -> dictates behavior of a profile object and functionality
+-       userPrompts.js -> grabs prompts from supabase prompts table 
+-       useStores.js -> dictates writing functionality and context (prompt/profile)
 
 
 ## 🧩 Database Schema
@@ -46,7 +50,6 @@ Row-Level Security policies ensure users can **read and write only their own rec
 **Clone**
 ```bash
 git clone https://github.com/yourusername/daily-quill.git
-cd daily-quill
 ```
 **Install dependencies**
 ```npm install```
