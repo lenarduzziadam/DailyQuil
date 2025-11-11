@@ -1,7 +1,7 @@
 <template>
-  <div class="min-h-screen bg-gradient-to-br from-purple-50 to-blue-50">
+  <div class="min-h-screen gradient-bg">
     <!-- Navigation -->
-    <nav class="bg-white shadow-sm border-b">
+    <nav class="nav">
       <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div class="flex justify-between items-center h-16">
           <NuxtLink to="/" class="text-2xl font-bold text-purple-600">
@@ -16,10 +16,10 @@
 
     <div class="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
       <!-- Prompt Display (if using a prompt) -->
-      <div v-if="prompt" class="bg-white rounded-xl shadow-lg p-6 mb-6 border-2 border-purple-200">
+      <div v-if="prompt" class="prompt-card mb-6">
         <div class="flex items-center justify-between mb-3">
           <h3 class="text-lg font-semibold text-gray-900">Writing for Prompt:</h3>
-          <span class="bg-gradient-to-r from-purple-500 to-pink-500 text-white px-3 py-1 rounded-full text-sm font-semibold">
+          <span class="badge-primary">
             {{ prompt.genre }}
           </span>
         </div>
@@ -27,7 +27,7 @@
           <span
             v-for="(element, index) in prompt.elements"
             :key="index"
-            class="bg-blue-100 text-blue-800 px-3 py-1 rounded-lg text-sm font-medium"
+            class="badge-element"
           >
             {{ element }}
           </span>
@@ -35,8 +35,8 @@
       </div>
 
       <!-- Writing Form -->
-      <div class="bg-white rounded-xl shadow-lg p-8">
-        <h1 class="text-3xl font-bold text-gray-900 mb-6">
+      <div class="card p-8">
+        <h1 class="heading-lg mb-6">
           {{ isEditing ? 'Edit Your Story' : 'Write Your Story' }}
         </h1>
 
@@ -51,7 +51,7 @@
               type="text"
               required
               maxlength="200"
-              class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent"
+              class="input"
               placeholder="Give your story a title..."
             />
           </div>
@@ -62,7 +62,7 @@
               <label class="block text-sm font-medium text-gray-700">
                 Your Story
               </label>
-              <span class="text-sm text-gray-500">
+              <span class="word-count">
                 {{ wordCount }} words
               </span>
             </div>
@@ -70,7 +70,7 @@
               v-model="formData.content"
               required
               rows="20"
-              class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent font-mono"
+              class="textarea"
               placeholder="Once upon a time..."
             ></textarea>
           </div>
@@ -98,7 +98,7 @@
             <button
               type="submit"
               :disabled="saving"
-              class="flex-1 bg-gradient-to-r from-purple-600 to-pink-600 text-white py-3 px-6 rounded-lg font-semibold hover:shadow-lg disabled:opacity-50 disabled:cursor-not-allowed transition-all"
+              class="btn-primary flex-1"
             >
               {{ saving ? 'Saving...' : (isEditing ? 'Update Story' : 'Publish Story') }}
             </button>

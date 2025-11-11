@@ -1,7 +1,7 @@
 <template>
-  <div class="min-h-screen bg-gradient-to-br from-purple-50 to-blue-50">
+  <div class="min-h-screen gradient-bg">
     <!-- Navigation -->
-    <nav class="bg-white shadow-sm border-b">
+    <nav class="nav">
       <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div class="flex justify-between items-center h-16">
           <NuxtLink to="/" class="text-2xl font-bold text-purple-600">
@@ -28,7 +28,7 @@
 
       <div v-else class="space-y-6">
         <!-- Profile Header -->
-        <div class="bg-white rounded-xl shadow-lg p-8">
+        <div class="card p-8">
           <div class="flex items-start justify-between">
             <div class="flex items-center space-x-6">
               <!-- Avatar -->
@@ -57,28 +57,28 @@
 
           <!-- Stats -->
           <div class="grid grid-cols-3 gap-6 mt-8 pt-6 border-t">
-            <div class="text-center">
-              <div class="text-3xl font-bold text-purple-600">{{ profile?.total_stories || 0 }}</div>
-              <div class="text-sm text-gray-500 mt-1">Stories Written</div>
+            <div class="stat-box">
+              <div class="stat-value">{{ profile?.total_stories || 0 }}</div>
+              <div class="stat-label">Stories Written</div>
             </div>
-            <div class="text-center">
-              <div class="text-3xl font-bold text-orange-500">{{ profile?.current_streak || 0 }} 🔥</div>
-              <div class="text-sm text-gray-500 mt-1">Current Streak</div>
+            <div class="stat-box">
+              <div class="stat-value text-orange-500">{{ profile?.current_streak || 0 }} 🔥</div>
+              <div class="stat-label">Current Streak</div>
             </div>
-            <div class="text-center">
-              <div class="text-3xl font-bold text-blue-600">{{ profile?.longest_streak || 0 }}</div>
-              <div class="text-sm text-gray-500 mt-1">Longest Streak</div>
+            <div class="stat-box">
+              <div class="stat-value text-blue-600">{{ profile?.longest_streak || 0 }}</div>
+              <div class="stat-label">Longest Streak</div>
             </div>
           </div>
         </div>
 
         <!-- Stories Section -->
-        <div class="bg-white rounded-xl shadow-lg p-8">
+        <div class="card p-8">
           <div class="flex justify-between items-center mb-6">
-            <h2 class="text-2xl font-bold text-gray-900">Your Stories</h2>
+            <h2 class="heading-md">Your Stories</h2>
             <NuxtLink
               to="/write"
-              class="bg-gradient-to-r from-purple-600 to-pink-600 text-white px-6 py-2 rounded-lg font-semibold hover:shadow-lg transition-all"
+              class="btn-primary"
             >
               Write New Story
             </NuxtLink>
@@ -102,7 +102,7 @@
             <div
               v-for="story in stories"
               :key="story.id"
-              class="border border-gray-200 rounded-lg p-6 hover:shadow-md transition-shadow cursor-pointer"
+              class="card-interactive p-6"
               @click="navigateTo(`/story/${story.id}`)"
             >
               <div class="flex justify-between items-start mb-3">
@@ -116,14 +116,14 @@
                 </div>
                 <div class="ml-4 flex flex-col items-end space-y-2">
                   <span
-                    :class="story.is_public ? 'bg-green-100 text-green-700' : 'bg-gray-100 text-gray-700'"
-                    class="px-3 py-1 rounded-full text-xs font-medium"
+                    :class="story.is_public ? 'badge-status' : 'bg-gray-100 text-gray-700'"
+                    class="badge"
                   >
                     {{ story.is_public ? 'Public' : 'Private' }}
                   </span>
                   <span
                     v-if="story.prompt"
-                    class="bg-purple-100 text-purple-700 px-3 py-1 rounded-full text-xs font-medium"
+                    class="badge-genre"
                   >
                     {{ story.prompt.genre }}
                   </span>
@@ -146,8 +146,8 @@
       class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4"
       @click.self="showEditModal = false"
     >
-      <div class="bg-white rounded-xl shadow-2xl max-w-md w-full p-8">
-        <h2 class="text-2xl font-bold text-gray-900 mb-6">Edit Profile</h2>
+      <div class="card max-w-md w-full p-8">
+        <h2 class="heading-md mb-6">Edit Profile</h2>
         
         <form @submit.prevent="handleUpdateProfile" class="space-y-4">
           <div>
@@ -157,7 +157,7 @@
             <input
               v-model="editForm.username"
               type="text"
-              class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500"
+              class="input"
               placeholder="username"
             />
           </div>
@@ -169,7 +169,7 @@
             <input
               v-model="editForm.display_name"
               type="text"
-              class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500"
+              class="input"
               placeholder="Your Name"
             />
           </div>
@@ -181,7 +181,7 @@
             <textarea
               v-model="editForm.bio"
               rows="4"
-              class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500"
+              class="textarea"
               placeholder="Tell us about yourself..."
             ></textarea>
           </div>
@@ -194,7 +194,7 @@
             <button
               type="submit"
               :disabled="updating"
-              class="flex-1 bg-purple-600 text-white py-2 rounded-lg hover:bg-purple-700 disabled:opacity-50 transition-colors"
+              class="btn-primary flex-1"
             >
               {{ updating ? 'Saving...' : 'Save Changes' }}
             </button>
