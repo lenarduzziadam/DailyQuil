@@ -16,22 +16,61 @@
 
     <div class="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
       <!-- Prompt Display (if using a prompt) -->
-      <div v-if="prompt" class="prompt-card mb-6">
-        <div class="flex items-center justify-between mb-3">
-          <h3 class="text-lg font-semibold text-gray-900">Writing for Prompt:</h3>
-          <span class="badge-primary">
-            {{ prompt.genre }}
-          </span>
-        </div>
-        <div class="flex flex-wrap gap-2">
-          <span
-            v-for="(element, index) in prompt.elements"
-            :key="index"
-            class="badge-element"
+      <div v-if="prompt" class="mb-6">
+        <button
+          @click="showPrompt = !showPrompt"
+          class="w-full flex items-center justify-between p-4 bg-white rounded-xl shadow-md hover:shadow-lg transition-all border-2 border-purple-200"
+        >
+          <div class="flex items-center space-x-3">
+            <span class="text-2xl">💡</span>
+            <div class="text-left">
+              <h3 class="font-semibold text-gray-900">Today's Prompt</h3>
+              <p class="text-sm text-gray-500">{{ showPrompt ? 'Click to hide' : 'Click to view' }}</p>
+            </div>
+          </div>
+          <svg 
+            :class="{'rotate-180': showPrompt}" 
+            class="w-6 h-6 text-purple-600 transition-transform duration-200" 
+            fill="none" 
+            stroke="currentColor" 
+            viewBox="0 0 24 24"
           >
-            {{ element }}
-          </span>
-        </div>
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" />
+          </svg>
+        </button>
+        
+        <!-- Expandable Prompt Content -->
+        <transition
+          enter-active-class="transition-all duration-300 ease-out"
+          enter-from-class="opacity-0 max-h-0"
+          enter-to-class="opacity-100 max-h-96"
+          leave-active-class="transition-all duration-300 ease-in"
+          leave-from-class="opacity-100 max-h-96"
+          leave-to-class="opacity-0 max-h-0"
+        >
+          <div v-show="showPrompt" class="overflow-hidden">
+            <div class="prompt-card mt-3">
+              <div class="flex items-center justify-between mb-3">
+                <h3 class="text-lg font-semibold text-gray-900">Writing for Prompt:</h3>
+                <span class="badge-primary">
+                  {{ prompt.genre }}
+                </span>
+              </div>
+              <div class="space-y-2">
+                <p class="text-sm text-gray-600 font-medium">Include these elements in your story:</p>
+                <div class="flex flex-wrap gap-2">
+                  <span
+                    v-for="(element, index) in prompt.elements"
+                    :key="index"
+                    class="badge-element"
+                  >
+                    {{ element }}
+                  </span>
+                </div>
+              </div>
+            </div>
+          </div>
+        </transition>
       </div>
 
       <!-- Writing Form -->
@@ -132,6 +171,7 @@ const saving = ref(false)
 const message = ref('')
 const messageType = ref('success')
 const loading = ref(true)
+const showPrompt = ref(true) // Start expanded by default
 
 const formData = ref({
   title: '',
