@@ -83,6 +83,14 @@
             >
               Start Writing
             </NuxtLink>
+            <button
+              v-if="user"
+              @click="handleRandomPrompt"
+              :disabled="loadingRandom"
+              class="btn-outline inline-block ml-3"
+            >
+              {{ loadingRandom ? 'Loading...' : '🎲 Random Prompt' }}
+            </button>
             <NuxtLink
               v-else
               to="/login"
@@ -217,7 +225,7 @@
 <script setup>
 const supabase = useSupabaseClient()
 const user = useSupabaseUser()
-const { getTodayPrompt } = usePrompts()
+const { getTodayPrompt, getRandomPrompt } = usePrompts()
 const { getPublicStories, getUserStories: fetchUserStories } = useStories()
 
 const todayPrompt = ref(null)
@@ -225,6 +233,7 @@ const stories = ref([])
 const userStories = ref([])
 const loadingPrompt = ref(true)
 const loadingStories = ref(true)
+const loadingRandom = ref(false)
 
 // Load today's prompt
 const loadPrompt = async () => {
@@ -264,6 +273,19 @@ const loadUserStories = async () => {
 const handleSignOut = async () => {
   await supabase.auth.signOut()
   navigateTo('/')
+}
+
+// Get a random prompt and navigate to write page
+const handleRandomPrompt = async () => {
+  try {
+    loadingRandom.value = true
+    const randomPrompt = await getRandomPrompt(todayPrompt.value?.id)
+    navigateTo(`/write?prompt=${randomPrompt.id}`)
+  } catch (error) {
+    console.error('Error loading random prompt:', error)
+  } finally {
+    loadingRandom.value = false
+  }
 }
 
 // Format date helper

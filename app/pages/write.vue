@@ -24,19 +24,29 @@
           <div class="flex items-center space-x-3">
             <span class="text-2xl">💡</span>
             <div class="text-left">
-              <h3 class="font-semibold text-gray-900">Today's Prompt</h3>
+              <h3 class="font-semibold text-gray-900">{{ isRandomPrompt ? 'Random Prompt' : "Today's Prompt" }}</h3>
               <p class="text-sm text-gray-500">{{ showPrompt ? 'Click to hide' : 'Click to view' }}</p>
             </div>
           </div>
-          <svg 
-            :class="{'rotate-180': showPrompt}" 
-            class="w-6 h-6 text-purple-600 transition-transform duration-200" 
-            fill="none" 
-            stroke="currentColor" 
-            viewBox="0 0 24 24"
-          >
-            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" />
-          </svg>
+          <div class="flex items-center space-x-2">
+            <button
+              v-if="!isEditing"
+              @click.stop="handleRandomPrompt"
+              :disabled="loadingRandom"
+              class="btn-outline px-3 py-1 text-sm"
+            >
+              {{ loadingRandom ? '...' : '🎲 Random' }}
+            </button>
+            <svg 
+              :class="{'rotate-180': showPrompt}" 
+              class="w-6 h-6 text-purple-600 transition-transform duration-200" 
+              fill="none" 
+              stroke="currentColor" 
+              viewBox="0 0 24 24"
+            >
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" />
+            </svg>
+          </div>
         </button>
         
         <!-- Expandable Prompt Content -->
@@ -161,7 +171,7 @@ const route = useRoute()
 const router = useRouter()
 const supabase = useSupabaseClient()
 const user = useSupabaseUser()
-const { getPromptById } = usePrompts()
+const { getPromptById, getRandomPrompt } = usePrompts()
 const { createStory, updateStory, deleteStory, getStoryById } = useStories()
 
 const prompt = ref(null)
@@ -172,6 +182,8 @@ const message = ref('')
 const messageType = ref('success')
 const loading = ref(true)
 const showPrompt = ref(true) // Start expanded by default
+const loadingRandom = ref(false)
+const isRandomPrompt = ref(false)
 
 const formData = ref({
   title: '',
@@ -190,9 +202,37 @@ const loadPrompt = async () => {
   if (promptId) {
     try {
       prompt.value = await getPromptById(parseInt(promptId))
+      // Check if this is from the random button (not today's prompt)
+      isRandomPrompt.value = route.query.random === 'true'
     } catch (error) {
       console.error('Error loading prompt:', error)
     }
+  }
+}
+
+// Get a random prompt
+const handleRandomPrompt = async () => {
+  try {
+    loadingRandom.value = true
+    const randomPrompt = await getRandomPrompt(prompt.value?.id)
+    prompt.value = randomPrompt
+    isRandomPrompt.value = true
+    showPrompt.value = true // Expand to show the new prompt
+    
+    // Update URL without reloading
+    router.replace({ 
+      query: { 
+        ...route.query, 
+        prompt: randomPrompt.id,
+        random: 'true'
+      } 
+    })
+  } catch (error) {
+    console.error('Error loading random prompt:', error)
+    message.value = 'Error loading random prompt'
+    messageType.value = 'error'
+  } finally {
+    loadingRandom.value = false
   }
 }
 
