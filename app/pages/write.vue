@@ -1,4 +1,6 @@
-<template>
+-- From setup_auto_rotation.sql file
+SELECT rotate_daily_prompt();
+SELECT * FROM schedule_prompts_ahead(30);<template>
   <div class="min-h-screen gradient-bg">
     <!-- Navigation -->
     <nav class="nav">
