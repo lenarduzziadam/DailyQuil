@@ -72,4 +72,3 @@ git clone https://github.com/yourusername/daily-quill.git
 __***👤 Author***__
 ***Adam Lenarduzzi***
 CS Student | Software Developer | Creator of Jarlang & Airport Escape
-LinkedIn | GitHub
