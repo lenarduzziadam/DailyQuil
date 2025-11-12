@@ -159,6 +159,113 @@
             </div>
           </div>
         </div>
+
+        <!-- Preferences Section -->
+        <div class="card p-8">
+          <h2 class="heading-md mb-6">Writing Preferences</h2>
+          
+          <form @submit.prevent="handleUpdatePreferences" class="space-y-6">
+            <!-- Genre Preferences -->
+            <div>
+              <label class="block text-sm font-medium text-gray-700 mb-3">
+                Preferred Genres
+              </label>
+              <p class="text-sm text-gray-500 mb-3">
+                Select your favorite genres. Random prompts will favor these (70% chance), but you'll still see variety.
+              </p>
+              <div class="grid grid-cols-2 md:grid-cols-3 gap-3">
+                <label
+                  v-for="genre in availableGenres"
+                  :key="genre"
+                  class="flex items-center space-x-2 p-3 border-2 rounded-lg cursor-pointer transition-all"
+                  :class="preferencesForm.preferred_genres.includes(genre) 
+                    ? 'border-purple-500 bg-purple-50' 
+                    : 'border-gray-200 hover:border-purple-300'"
+                >
+                  <input
+                    type="checkbox"
+                    :value="genre"
+                    v-model="preferencesForm.preferred_genres"
+                    class="w-4 h-4 text-purple-600 border-gray-300 rounded focus:ring-purple-500"
+                  />
+                  <span class="text-sm font-medium text-gray-700">{{ genre }}</span>
+                </label>
+              </div>
+            </div>
+
+            <!-- Daily Word Goal -->
+            <div>
+              <label class="block text-sm font-medium text-gray-700 mb-2">
+                Daily Word Goal
+              </label>
+              <p class="text-sm text-gray-500 mb-3">
+                Set a daily writing goal to track your progress.
+              </p>
+              <div class="flex items-center space-x-4">
+                <input
+                  v-model.number="preferencesForm.daily_word_goal"
+                  type="number"
+                  min="50"
+                  max="10000"
+                  step="50"
+                  class="input max-w-xs"
+                  placeholder="500"
+                />
+                <span class="text-sm text-gray-600">words per day</span>
+              </div>
+              <div class="mt-3 flex items-center space-x-2">
+                <button
+                  v-for="preset in [250, 500, 750, 1000]"
+                  :key="preset"
+                  type="button"
+                  @click="preferencesForm.daily_word_goal = preset"
+                  class="text-xs px-3 py-1 rounded-full border border-purple-300 text-purple-700 hover:bg-purple-50 transition-colors"
+                >
+                  {{ preset }}
+                </button>
+              </div>
+            </div>
+
+            <!-- Email Reminders -->
+            <div>
+              <label class="flex items-center space-x-3 p-4 border-2 border-gray-200 rounded-lg cursor-pointer hover:border-purple-300 transition-colors">
+                <input
+                  v-model="preferencesForm.enable_email_reminders"
+                  type="checkbox"
+                  class="w-5 h-5 text-purple-600 border-gray-300 rounded focus:ring-purple-500"
+                />
+                <div class="flex-1">
+                  <span class="block text-sm font-medium text-gray-700">Enable Email Reminders</span>
+                  <span class="block text-xs text-gray-500 mt-1">Get a daily reminder to write your story</span>
+                </div>
+              </label>
+              
+              <!-- Reminder Time -->
+              <div v-if="preferencesForm.enable_email_reminders" class="mt-3 ml-8">
+                <label class="block text-sm font-medium text-gray-700 mb-2">
+                  Reminder Time
+                </label>
+                <input
+                  v-model="preferencesForm.reminder_time"
+                  type="time"
+                  class="input max-w-xs"
+                />
+              </div>
+            </div>
+
+            <div v-if="preferencesMessage" class="p-3 rounded-lg" :class="preferencesMessageType === 'success' ? 'bg-green-50 text-green-800' : 'bg-red-50 text-red-800'">
+              {{ preferencesMessage }}
+            </div>
+
+            <button
+              type="submit"
+              :disabled="updatingPreferences"
+              class="btn-primary"
+            >
+              {{ updatingPreferences ? 'Saving...' : 'Save Preferences' }}
+            </button>
+          </form>
+        </div>
       </div>
     </div>
 
@@ -285,7 +392,7 @@
 
 <script setup>
 const user = useSupabaseUser()
-const { getCurrentProfile, updateProfile: updateProfileData, updateAvatar } = useProfiles()
+const { getCurrentProfile, updateProfile: updateProfileData, updateAvatar, updatePreferences } = useProfiles()
 const { getUserStories } = useStories()
 
 const profile = ref(null)
@@ -298,6 +405,31 @@ const updateMessage = ref('')
 const updateMessageType = ref('success')
 const avatarFile = ref(null)
 const avatarPreview = ref(null)
+
+// Available genres for preferences
+const availableGenres = [
+  'Fantasy',
+  'Sci-Fi',
+  'Mystery',
+  'Horror',
+  'Romance',
+  'Adventure',
+  'Thriller',
+  'Historical',
+  'Drama'
+]
+
+// Preferences form
+const preferencesForm = ref({
+  preferred_genres: [],
+  daily_word_goal: 500,
+  enable_email_reminders: false,
+  reminder_time: '09:00'
+})
+
+const updatingPreferences = ref(false)
+const preferencesMessage = ref('')
+const preferencesMessageType = ref('success')
 const fileInput = ref(null)
 
 const editForm = ref({
@@ -322,6 +454,14 @@ const loadProfile = async () => {
       username: profile.value?.username || '',
       display_name: profile.value?.display_name || '',
       bio: profile.value?.bio || ''
+    }
+    
+    // Initialize preferences form
+    preferencesForm.value = {
+      preferred_genres: profile.value?.preferred_genres || [],
+      daily_word_goal: profile.value?.daily_word_goal || 500,
+      enable_email_reminders: profile.value?.enable_email_reminders || false,
+      reminder_time: profile.value?.reminder_time || '09:00'
     }
   } catch (error) {
     console.error('Error loading profile:', error)
@@ -423,6 +563,30 @@ const formatDate = (dateString) => {
     month: 'short', 
     day: 'numeric' 
   })
+}
+
+// Update preferences
+const handleUpdatePreferences = async () => {
+  try {
+    updatingPreferences.value = true
+    preferencesMessage.value = ''
+    
+    await updatePreferences(preferencesForm.value)
+    
+    preferencesMessage.value = 'Preferences saved successfully!'
+    preferencesMessageType.value = 'success'
+    
+    // Clear message after a moment
+    setTimeout(() => {
+      preferencesMessage.value = ''
+    }, 3000)
+  } catch (error) {
+    console.error('Error updating preferences:', error)
+    preferencesMessage.value = error.message || 'Error updating preferences'
+    preferencesMessageType.value = 'error'
+  } finally {
+    updatingPreferences.value = false
+  }
 }
 
 // Load data on mount

@@ -125,6 +125,42 @@ export const useProfiles = () => {
     return await uploadAvatar(file)
   }
 
+  // Update user preferences
+  const updatePreferences = async (preferences) => {
+    const { data: { session } } = await supabase.auth.getSession()
+    if (!session?.user) throw new Error('User not authenticated')
+
+    const { data, error } = await supabase
+      .from('profiles')
+      .update({
+        preferred_genres: preferences.preferred_genres,
+        daily_word_goal: preferences.daily_word_goal,
+        enable_email_reminders: preferences.enable_email_reminders,
+        reminder_time: preferences.reminder_time
+      })
+      .eq('id', session.user.id)
+      .select()
+      .single()
+
+    if (error) throw error
+    return data
+  }
+
+  // Get user's writing stats including goal progress
+  const getUserStats = async () => {
+    const { data: { session } } = await supabase.auth.getSession()
+    if (!session?.user) throw new Error('User not authenticated')
+
+    const { data, error } = await supabase
+      .from('user_writing_stats')
+      .select('*')
+      .eq('id', session.user.id)
+      .single()
+
+    if (error) throw error
+    return data
+  }
+
   return {
     getCurrentProfile,
     getProfileById,
@@ -132,6 +168,8 @@ export const useProfiles = () => {
     updateProfile,
     createProfile,
     uploadAvatar,
-    updateAvatar
+    updateAvatar,
+    updatePreferences,
+    getUserStats
   }
 }

@@ -78,10 +78,38 @@ export const usePrompts = () => {
     return data[randomIndex]
   }
 
+  // Get a random prompt based on user's genre preferences (weighted)
+  const getPreferredRandomPrompt = async (excludeId = null) => {
+    const { data: { session } } = await supabase.auth.getSession()
+    
+    if (!session?.user) {
+      // If not logged in, return regular random
+      return getRandomPrompt(excludeId)
+    }
+
+    // Try to use the SQL function for weighted selection
+    const { data, error } = await supabase
+      .rpc('get_user_preferred_prompt', { user_id: session.user.id })
+      .single()
+
+    if (error) {
+      console.warn('Error getting preferred prompt, falling back to random:', error)
+      return getRandomPrompt(excludeId)
+    }
+
+    // If the result matches excludeId, try again
+    if (excludeId && data?.id === excludeId) {
+      return getRandomPrompt(excludeId)
+    }
+
+    return data
+  }
+
   return {
     getTodayPrompt,
     getAllPrompts,
     getPromptById,
-    getRandomPrompt
+    getRandomPrompt,
+    getPreferredRandomPrompt
   }
 }

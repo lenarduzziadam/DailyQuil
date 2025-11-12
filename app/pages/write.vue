@@ -113,10 +113,43 @@ SELECT * FROM schedule_prompts_ahead(30);<template>
               <label class="block text-sm font-medium text-gray-700">
                 Your Story
               </label>
-              <span class="word-count">
-                {{ wordCount }} words
-              </span>
+              <div class="flex items-center space-x-3">
+                <span class="word-count">
+                  {{ wordCount }} words
+                </span>
+                <span v-if="goalProgress" class="text-sm font-medium" :class="goalProgress.percent >= 100 ? 'text-green-600' : 'text-purple-600'">
+                  {{ goalProgress.percent >= 100 ? '🎉' : '📝' }} {{ goalProgress.percent }}%
+                </span>
+              </div>
             </div>
+            
+            <!-- Goal Progress Bar -->
+            <div v-if="goalProgress" class="mb-3 p-3 bg-purple-50 rounded-lg border border-purple-200">
+              <div class="flex justify-between items-center mb-2">
+                <span class="text-xs font-medium text-gray-600">
+                  Daily Goal Progress
+                </span>
+                <span class="text-xs text-gray-500">
+                  {{ goalProgress.totalWords }} / {{ goalProgress.goal }} words
+                </span>
+              </div>
+              <div class="w-full bg-gray-200 rounded-full h-2.5">
+                <div 
+                  class="h-2.5 rounded-full transition-all duration-300"
+                  :class="goalProgress.percent >= 100 ? 'bg-green-500' : 'bg-purple-600'"
+                  :style="`width: ${goalProgress.percent}%`"
+                ></div>
+              </div>
+              <p class="text-xs text-gray-500 mt-1">
+                <template v-if="goalProgress.percent >= 100">
+                  🎉 Goal complete! Keep writing!
+                </template>
+                <template v-else>
+                  {{ goalProgress.remaining }} words to go
+                </template>
+              </p>
+            </div>
+            
             <textarea
               v-model="formData.content"
               required
@@ -173,8 +206,9 @@ const route = useRoute()
 const router = useRouter()
 const supabase = useSupabaseClient()
 const user = useSupabaseUser()
-const { getPromptById, getRandomPrompt } = usePrompts()
+const { getPromptById, getPreferredRandomPrompt } = usePrompts()
 const { createStory, updateStory, deleteStory, getStoryById } = useStories()
+const { getUserStats } = useProfiles()
 
 const prompt = ref(null)
 const isEditing = ref(false)
@@ -186,6 +220,7 @@ const loading = ref(true)
 const showPrompt = ref(true) // Start expanded by default
 const loadingRandom = ref(false)
 const isRandomPrompt = ref(false)
+const userStats = ref(null)
 
 const formData = ref({
   title: '',
@@ -196,6 +231,22 @@ const formData = ref({
 // Computed word count
 const wordCount = computed(() => {
   return formData.value.content.trim().split(/\s+/).filter(word => word.length > 0).length
+})
+
+// Computed goal progress
+const goalProgress = computed(() => {
+  if (!userStats.value?.daily_word_goal) return null
+  const goal = userStats.value.daily_word_goal
+  const todayWords = userStats.value.words_written_today || 0
+  const totalWords = todayWords + wordCount.value
+  const percent = Math.min(Math.round((totalWords / goal) * 100), 100)
+  return {
+    goal,
+    todayWords,
+    totalWords,
+    percent,
+    remaining: Math.max(goal - totalWords, 0)
+  }
 })
 
 // Load prompt if provided
@@ -216,7 +267,7 @@ const loadPrompt = async () => {
 const handleRandomPrompt = async () => {
   try {
     loadingRandom.value = true
-    const randomPrompt = await getRandomPrompt(prompt.value?.id)
+    const randomPrompt = await getPreferredRandomPrompt(prompt.value?.id)
     prompt.value = randomPrompt
     isRandomPrompt.value = true
     showPrompt.value = true // Expand to show the new prompt
@@ -235,6 +286,15 @@ const handleRandomPrompt = async () => {
     messageType.value = 'error'
   } finally {
     loadingRandom.value = false
+  }
+}
+
+// Load user stats for goal tracking
+const loadUserStats = async () => {
+  try {
+    userStats.value = await getUserStats()
+  } catch (error) {
+    console.error('Error loading user stats:', error)
   }
 }
 
@@ -339,6 +399,7 @@ onMounted(async () => {
   
   await loadPrompt()
   await loadStory()
+  await loadUserStats()
   loading.value = false
 })
 

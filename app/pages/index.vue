@@ -225,7 +225,7 @@
 <script setup>
 const supabase = useSupabaseClient()
 const user = useSupabaseUser()
-const { getTodayPrompt, getRandomPrompt } = usePrompts()
+const { getTodayPrompt, getPreferredRandomPrompt } = usePrompts()
 const { getPublicStories, getUserStories: fetchUserStories } = useStories()
 
 const todayPrompt = ref(null)
@@ -279,7 +279,7 @@ const handleSignOut = async () => {
 const handleRandomPrompt = async () => {
   try {
     loadingRandom.value = true
-    const randomPrompt = await getRandomPrompt(todayPrompt.value?.id)
+    const randomPrompt = await getPreferredRandomPrompt(todayPrompt.value?.id)
     navigateTo(`/write?prompt=${randomPrompt.id}`)
   } catch (error) {
     console.error('Error loading random prompt:', error)
