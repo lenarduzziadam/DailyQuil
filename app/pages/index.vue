@@ -17,6 +17,13 @@
             </NuxtLink>
             <NuxtLink
               v-if="user"
+              to="/submit-prompt"
+              class="text-purple-600 hover:text-purple-700 font-medium"
+            >
+              💡 Submit Prompt
+            </NuxtLink>
+            <NuxtLink
+              v-if="user"
               to="/profile"
               class="text-gray-700 hover:text-purple-600"
             >
