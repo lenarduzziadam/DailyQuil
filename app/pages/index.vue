@@ -53,7 +53,14 @@
       <div class="mb-8">
         <div class="prompt-card">
           <div class="flex items-center justify-between mb-4">
-            <h2 class="heading-lg">Today's Prompt</h2>
+            <div>
+              <h2 class="heading-lg flex items-center gap-2">
+                <span>✨ Prompt of the Day</span>
+              </h2>
+              <p class="text-sm text-gray-500 mt-1">
+                New prompt every day at midnight • {{ timeUntilNextPrompt }}
+              </p>
+            </div>
             <span class="badge bg-purple-100 text-purple-800 px-4 py-2">
               {{ new Date().toLocaleDateString('en-US', { weekday: 'long', month: 'long', day: 'numeric' }) }}
             </span>
@@ -241,6 +248,32 @@ const userStories = ref([])
 const loadingPrompt = ref(true)
 const loadingStories = ref(true)
 const loadingRandom = ref(false)
+const timeUntilNextPrompt = ref('')
+
+// Calculate time until next prompt (midnight)
+const updateCountdown = () => {
+  const now = new Date()
+  const tomorrow = new Date(now)
+  tomorrow.setDate(tomorrow.getDate() + 1)
+  tomorrow.setHours(0, 0, 0, 0)
+  
+  const diff = tomorrow - now
+  const hours = Math.floor(diff / (1000 * 60 * 60))
+  const minutes = Math.floor((diff % (1000 * 60 * 60)) / (1000 * 60))
+  
+  timeUntilNextPrompt.value = `Next in ${hours}h ${minutes}m`
+}
+
+// Update countdown every minute
+let countdownInterval
+onMounted(() => {
+  updateCountdown()
+  countdownInterval = setInterval(updateCountdown, 60000) // Update every minute
+})
+
+onUnmounted(() => {
+  if (countdownInterval) clearInterval(countdownInterval)
+})
 
 // Load today's prompt
 const loadPrompt = async () => {
