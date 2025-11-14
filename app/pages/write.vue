@@ -91,6 +91,49 @@ SELECT * FROM schedule_prompts_ahead(30);<template>
           {{ isEditing ? 'Edit Your Story' : 'Write Your Story' }}
         </h1>
 
+        <!-- Word Count Goal -->
+        <div v-if="!isEditing" class="mb-6 p-4 bg-purple-50 rounded-lg">
+          <label class="block text-sm font-medium text-gray-700 mb-3">
+            📊 Set Your Word Count Goal
+          </label>
+          <div class="flex gap-2 flex-wrap">
+            <button
+              v-for="goal in wordGoals"
+              :key="goal"
+              type="button"
+              @click="wordGoal = goal"
+              class="px-4 py-2 rounded-lg font-medium transition-all"
+              :class="wordGoal === goal 
+                ? 'bg-purple-600 text-white' 
+                : 'bg-white text-gray-700 hover:bg-purple-100'"
+            >
+              {{ goal }} words
+            </button>
+          </div>
+        </div>
+
+        <!-- Progress Bar -->
+        <div v-if="wordGoal > 0" class="mb-6">
+          <div class="flex justify-between items-center mb-2">
+            <span class="text-sm font-medium text-gray-700">
+              Progress: {{ wordCount }} / {{ wordGoal }} words
+            </span>
+            <span class="text-sm font-semibold" :class="progressColor">
+              {{ progressPercentage }}%
+            </span>
+          </div>
+          <div class="w-full bg-gray-200 rounded-full h-3 overflow-hidden">
+            <div 
+              class="h-3 rounded-full transition-all duration-300"
+              :class="progressBarColor"
+              :style="{ width: `${Math.min(progressPercentage, 100)}%` }"
+            ></div>
+          </div>
+          <p class="text-sm mt-2" :class="progressColor">
+            {{ progressMessage }}
+          </p>
+        </div>
+
         <form @submit.prevent="handleSubmit" class="space-y-6">
           <!-- Title -->
           <div>
@@ -193,9 +236,44 @@ const formData = ref({
   is_public: false
 })
 
+// Word count goals
+const wordGoals = [100, 250, 500, 1000, 2000]
+const wordGoal = ref(500) // Default goal
+
 // Computed word count
 const wordCount = computed(() => {
   return formData.value.content.trim().split(/\s+/).filter(word => word.length > 0).length
+})
+
+// Progress calculations
+const progressPercentage = computed(() => {
+  if (wordGoal.value === 0) return 0
+  return Math.round((wordCount.value / wordGoal.value) * 100)
+})
+
+const progressColor = computed(() => {
+  const percent = progressPercentage.value
+  if (percent >= 100) return 'text-green-600'
+  if (percent >= 75) return 'text-blue-600'
+  if (percent >= 50) return 'text-yellow-600'
+  return 'text-gray-600'
+})
+
+const progressBarColor = computed(() => {
+  const percent = progressPercentage.value
+  if (percent >= 100) return 'bg-green-500'
+  if (percent >= 75) return 'bg-blue-500'
+  if (percent >= 50) return 'bg-yellow-500'
+  return 'bg-purple-500'
+})
+
+const progressMessage = computed(() => {
+  const percent = progressPercentage.value
+  if (percent >= 100) return '🎉 Goal achieved! Keep going!'
+  if (percent >= 75) return '💪 Almost there! You can do it!'
+  if (percent >= 50) return '🔥 Halfway there! Keep writing!'
+  if (percent >= 25) return '✨ Great start! Keep going!'
+  return '📝 Start writing to see your progress'
 })
 
 // Load prompt if provided

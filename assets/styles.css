@@ -140,7 +140,7 @@
   right: -50%;
   width: 200%;
   height: 200%;
-  background: linear-gradient(45deg, transparent, rgba(124, 58, 237, 0.05), transparent);
+  background: linear-gradient(45deg, transparent, rgba(64, 58, 237, 0.05), transparent);
   transform: rotate(45deg);
 }
 
