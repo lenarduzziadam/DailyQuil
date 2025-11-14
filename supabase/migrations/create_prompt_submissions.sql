@@ -156,4 +156,4 @@ GRANT EXECUTE ON FUNCTION approve_prompt_submission TO authenticated;
 GRANT EXECUTE ON FUNCTION reject_prompt_submission TO authenticated;
 
 -- Set yourself as admin (replace with your user ID)
-UPDATE profiles SET is_admin = true WHERE email = 'lenarduzziadam@gmail.com';
+UPDATE profiles SET is_admin = true WHERE username = 'FireWalker99';
