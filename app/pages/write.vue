@@ -212,6 +212,8 @@ SELECT * FROM schedule_prompts_ahead(30);<template>
 </template>
 
 <script setup>
+import { recordWordCount } from '../api/analytics';
+
 const route = useRoute()
 const router = useRouter()
 const supabase = useSupabaseClient()
@@ -369,6 +371,15 @@ const handleSubmit = async () => {
       isEditing.value = true
     }
     
+    // Record word count for analytics
+    const wordCountValue = wordCount.value; // Use computed word count
+    try {
+      await recordWordCount(user.value.id, wordCountValue, supabase);
+    } catch (analyticsError) {
+      console.error('Error recording word count:', analyticsError);
+      // Don't fail the story save if analytics fails
+    }
+
     messageType.value = 'success'
     
     // Redirect to story page after a moment
