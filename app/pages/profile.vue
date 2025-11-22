@@ -106,6 +106,10 @@
             </NuxtLink>
           </div>
 
+          <div v-if="deleteMessage" class="p-3 rounded-lg" :class="deleteMessageType === 'success' ? 'bg-green-50 text-green-800' : 'bg-red-50 text-red-800'">
+            {{ deleteMessage }}
+          </div>
+
           <div v-if="loadingStories" class="text-center py-8 text-gray-500">
             Loading stories...
           </div>
@@ -125,12 +129,13 @@
               v-for="story in stories"
               :key="story.id"
               class="card-interactive p-6"
-              @click="navigateTo(`/story/${story.id}`)"
             >
               <div class="flex justify-between items-start mb-3">
                 <div class="flex-1">
                   <h3 class="text-xl font-semibold text-gray-900 mb-2">
-                    {{ story.title }}
+                    <NuxtLink :to="`/story/${story.id}`" class="hover:text-purple-600">
+                      {{ story.title }}
+                    </NuxtLink>
                   </h3>
                   <p class="text-gray-600 text-sm line-clamp-2 mb-3">
                     {{ story.content }}
@@ -154,7 +159,20 @@
               
               <div class="flex items-center justify-between text-sm text-gray-500">
                 <span>{{ story.word_count }} words</span>
-                <span>{{ formatDate(story.created_at) }}</span>
+                <div class="flex items-center gap-3">
+                  <span>{{ formatDate(story.created_at) }}</span>
+                  <NuxtLink :to="`/story/${story.id}`" class="text-purple-600 hover:text-purple-700 font-semibold">
+                    View
+                  </NuxtLink>
+                  <button
+                    type="button"
+                    class="text-red-500 hover:text-red-700 font-semibold text-sm"
+                    :disabled="deletingStoryId === story.id"
+                    @click.stop="handleDeleteStory(story.id)"
+                  >
+                    {{ deletingStoryId === story.id ? 'Deleting...' : 'Delete' }}
+                  </button>
+                </div>
               </div>
             </div>
           </div>
@@ -286,7 +304,7 @@
 <script setup>
 const user = useSupabaseUser()
 const { getCurrentProfile, updateProfile: updateProfileData, updateAvatar } = useProfiles()
-const { getUserStories } = useStories()
+const { getUserStories, deleteStory } = useStories()
 
 const profile = ref(null)
 const stories = ref([])
@@ -299,6 +317,9 @@ const updateMessageType = ref('success')
 const avatarFile = ref(null)
 const avatarPreview = ref(null)
 const fileInput = ref(null)
+const deletingStoryId = ref(null)
+const deleteMessage = ref('')
+const deleteMessageType = ref('success')
 
 const editForm = ref({
   username: '',
@@ -344,6 +365,29 @@ const loadStories = async () => {
     console.error('Error loading stories:', error)
   } finally {
     loadingStories.value = false
+  }
+}
+
+const handleDeleteStory = async (id) => {
+  if (!confirm('Are you sure you want to delete this story? This cannot be undone.')) {
+    return
+  }
+
+  deletingStoryId.value = id
+  deleteMessage.value = ''
+  deleteMessageType.value = 'success'
+
+  try {
+    await deleteStory(id)
+    deleteMessage.value = 'Story deleted.'
+    deleteMessageType.value = 'success'
+    await loadStories()
+  } catch (error) {
+    console.error('Error deleting story:', error)
+    deleteMessage.value = error.message || 'Could not delete story.'
+    deleteMessageType.value = 'error'
+  } finally {
+    deletingStoryId.value = null
   }
 }
 
