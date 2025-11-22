@@ -248,6 +248,17 @@ SELECT * FROM schedule_prompts_ahead(30);<template>
                 {{ reflectionMessage }}
               </p>
             </div>
+            <div v-if="storySaved" class="flex items-center gap-3 text-sm text-gray-700">
+              <p>Story saved! Share a reflection, then view it when you’re ready.</p>
+              <button
+                type="button"
+                class="btn-outline"
+                @click="viewStory"
+                :disabled="!storyId"
+              >
+                View Story
+              </button>
+            </div>
             <div v-if="reflections.length" class="space-y-3">
               <h3 class="text-sm font-semibold text-gray-700">Recent Reflections</h3>
               <ul class="space-y-3">
@@ -288,6 +299,7 @@ const storyId = ref(null)
 const saving = ref(false)
 const message = ref('')
 const messageType = ref('success')
+const storySaved = ref(false)
 const reflectionForm = ref({ mood: '', takeaway: '' })
 const reflectionLoading = ref(false)
 const reflectionMessage = ref('')
@@ -572,4 +584,10 @@ watch(user, (newUser) => {
     loadReflections()
   }
 })
+
+const viewStory = () => {
+  if (storyId.value) {
+    router.push(`/story/${storyId.value}`)
+  }
+}
 </script>
