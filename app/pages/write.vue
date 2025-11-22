@@ -206,6 +206,66 @@ SELECT * FROM schedule_prompts_ahead(30);<template>
             </button>
           </div>
         </form>
+
+        <section class="card mt-8 bg-white p-6 space-y-4">
+          <div class="flex justify-between items-center">
+            <h2 class="text-lg font-semibold text-gray-900">Writing Reflection</h2>
+            <p class="text-sm text-gray-500">Capture how the session felt</p>
+          </div>
+          <div class="space-y-4">
+            <div>
+              <label class="text-sm font-medium text-gray-700 block mb-1">Mood (optional)</label>
+              <input
+                v-model="reflectionForm.mood"
+                type="text"
+                class="input"
+                placeholder="Inspired, stuck, grateful..."
+              />
+            </div>
+            <div>
+              <label class="text-sm font-medium text-gray-700 block mb-1">What stood out today?</label>
+              <textarea
+                v-model="reflectionForm.takeaway"
+                rows="3"
+                class="textarea"
+                placeholder="A quick takeaway from this session"
+              ></textarea>
+            </div>
+            <div class="flex items-center gap-4">
+              <button
+                type="button"
+                class="btn-secondary"
+                :disabled="reflectionLoading"
+                @click="handleSaveReflection"
+              >
+                {{ reflectionLoading ? 'Saving...' : 'Save Reflection' }}
+              </button>
+              <p
+                v-if="reflectionMessage"
+                :class="reflectionMessageType === 'success' ? 'text-green-600' : 'text-red-600'"
+                class="text-sm"
+              >
+                {{ reflectionMessage }}
+              </p>
+            </div>
+            <div v-if="reflections.length" class="space-y-3">
+              <h3 class="text-sm font-semibold text-gray-700">Recent Reflections</h3>
+              <ul class="space-y-3">
+                <li
+                  v-for="reflection in reflections"
+                  :key="reflection.id"
+                  class="border border-gray-100 rounded-lg p-3 bg-gray-50"
+                >
+                  <div class="flex justify-between text-xs text-gray-500 mb-1">
+                    <span>{{ formatReflectionDate(reflection.created_at) }}</span>
+                    <span v-if="reflection.mood">{{ reflection.mood }}</span>
+                  </div>
+                  <p class="text-sm text-gray-800">{{ reflection.takeaway }}</p>
+                </li>
+              </ul>
+            </div>
+          </div>
+        </section>
       </div>
     </div>
   </div>
@@ -213,6 +273,7 @@ SELECT * FROM schedule_prompts_ahead(30);<template>
 
 <script setup>
 import { recordWordCount } from '../api/analytics';
+import { saveReflection, fetchReflections } from '../api/reflections';
 
 const route = useRoute()
 const router = useRouter()
@@ -227,6 +288,11 @@ const storyId = ref(null)
 const saving = ref(false)
 const message = ref('')
 const messageType = ref('success')
+const reflectionForm = ref({ mood: '', takeaway: '' })
+const reflectionLoading = ref(false)
+const reflectionMessage = ref('')
+const reflectionMessageType = ref('success')
+const reflections = ref([])
 const loading = ref(true)
 const showPrompt = ref(true) // Start expanded by default
 const loadingRandom = ref(false)
@@ -352,6 +418,68 @@ const loadStory = async () => {
   }
 }
 
+const loadReflections = async () => {
+  if (!user.value) return
+  try {
+    const data = await fetchReflections(user.value.id, supabase)
+    reflections.value = data
+  } catch (error) {
+    console.error('Error loading reflections:', error)
+  }
+}
+
+const handleSaveReflection = async () => {
+  if (!user.value) {
+    reflectionMessageType.value = 'error'
+    reflectionMessage.value = 'Log in before saving reflections.'
+    return
+  }
+
+  if (!storyId.value) {
+    reflectionMessageType.value = 'error'
+    reflectionMessage.value = 'Save your story first so the reflection can link to it.'
+    return
+  }
+
+  if (!reflectionForm.value.takeaway.trim()) {
+    reflectionMessageType.value = 'error'
+    reflectionMessage.value = 'Add a quick takeaway before saving.'
+    return
+  }
+
+  reflectionLoading.value = true
+  reflectionMessage.value = ''
+  try {
+    await saveReflection(
+      {
+        userId: user.value.id,
+        storyId: storyId.value,
+        mood: reflectionForm.value.mood,
+        takeaway: reflectionForm.value.takeaway
+      },
+      supabase
+    )
+    reflectionMessageType.value = 'success'
+    reflectionMessage.value = 'Reflection saved!'
+    reflectionForm.value = { mood: '', takeaway: '' }
+    await loadReflections()
+  } catch (error) {
+    console.error('Error saving reflection:', error)
+    reflectionMessageType.value = 'error'
+    reflectionMessage.value = 'Could not save the reflection. Try again.'
+  } finally {
+    reflectionLoading.value = false
+  }
+}
+
+const formatReflectionDate = (value) => {
+  if (!value) return ''
+  return new Date(value).toLocaleDateString(undefined, {
+    month: 'short',
+    day: 'numeric'
+  })
+}
+
 // Handle form submission
 const handleSubmit = async () => {
   try {
@@ -381,6 +509,7 @@ const handleSubmit = async () => {
     }
 
     messageType.value = 'success'
+    await loadReflections()
     
     // Redirect to story page after a moment
     setTimeout(() => {
@@ -428,6 +557,7 @@ onMounted(async () => {
   
   await loadPrompt()
   await loadStory()
+  await loadReflections()
   loading.value = false
 })
 
@@ -435,6 +565,11 @@ onMounted(async () => {
 watch(user, (newUser) => {
   if (!newUser && !loading.value) {
     navigateTo('/login')
+    return
+  }
+
+  if (newUser) {
+    loadReflections()
   }
 })
 </script>
